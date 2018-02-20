@@ -1,82 +1,90 @@
 ﻿
+using System;
 using System.Collections.Generic;
 
 namespace Category_problem
 {
     public class CategoryService
     {
-        public List<Category> CategoryData { get; set; }
+        public IEnumerable<Category> CategoryData { get; set; }
 
-        public CategoryService(List<Category> Categories)
+        public CategoryService(IEnumerable<Category> categories)
         {
-            CategoryData = Categories;
+            CategoryData = categories;
         }
 
-        public List<Category> GetCategoriesByLevel(int level)
+        public IEnumerable<Category> GetCategoriesByLevel(int level)
         {
+            if (CategoryData == null)
+                throw new InvalidOperationException("CategoryData is null");
+
             //Get categories recursively starting from root level(1)
-            return (CategoryData != null) ? GetCategoriesByLevelRecursively(level, 1, -1, new List<Category>()) : null;
+            var categories = new List<Category>();
+            GetCategoriesByLevelRecursively(level, 1, -1, categories);
+
+            return categories;
         }
 
         public CategoryInfo GetCategoryInfoById(int categoryId)
         {
-            return (CategoryData != null) ? GetCategoryInfoByIdRecursively(categoryId, null) : null;
+            if (CategoryData == null)
+                throw new InvalidOperationException("CategoryData is null");
+
+            return GetCategoryInfoByIdRecursively(categoryId, null);
         }
 
         private CategoryInfo GetCategoryInfoByIdRecursively(int categoryId, CategoryInfo categoryInfo)
         {
             foreach (var category in CategoryData)
             {
-                if (category.CategoryId == categoryId)
+                if (category.CategoryId != categoryId)
+                    continue;
+
+                if (categoryInfo == null)
                 {
-                    if (categoryInfo == null)
+                    categoryInfo = new CategoryInfo()
                     {
-                        categoryInfo = new CategoryInfo()
-                        {
-                            Name = category.Name,
-                            ParentCategoryId = category.ParentCategoryId
-                        };
-                    }
+                        Name = category.Name,
+                        ParentCategoryId = category.ParentCategoryId
+                    };
+                }
 
-                    if (category.Keyword != null)
-                    {
-                        categoryInfo.Keyword = category.Keyword;
-                        return categoryInfo;
-                    }
-                    else
-                    {
-                        GetCategoryInfoByIdRecursively(category.ParentCategoryId, categoryInfo);
-                    }
-
+                if (category.Keyword != null)
+                {
+                    categoryInfo.Keyword = category.Keyword;
                     return categoryInfo;
                 }
+
+
+                if (category.ParentCategoryId != -1)
+                    GetCategoryInfoByIdRecursively(category.ParentCategoryId, categoryInfo);
+
+                return categoryInfo;
             }
 
             return null;
         }
 
-        private List<Category> GetCategoriesByLevelRecursively(int level, int current_level, int parentCategoryId, List<Category> levelCategories)
+        private void GetCategoriesByLevelRecursively(int level, int currentLevel, int parentCategoryId,  IList<Category> levelCategories)
         {
-            if (current_level > level)
+            if (currentLevel > level)
             {
-                return levelCategories;
+                return;
             }
 
             foreach (var category in CategoryData)
             {
-                if (category.ParentCategoryId == parentCategoryId)
+                if (category.ParentCategoryId != parentCategoryId) continue;
+
+                if (level == currentLevel)
                 {
-                    if (level == current_level)
-                    {
-                        levelCategories.Add(category);
-                    }
-                    else
-                    {
-                        GetCategoriesByLevelRecursively(level, current_level + 1, category.CategoryId, levelCategories);
-                    }
+                    levelCategories.Add(category);
+                }
+                else
+                {
+                    GetCategoriesByLevelRecursively(level, currentLevel + 1, category.CategoryId, levelCategories);
                 }
             }
-            return levelCategories;
         }
     }
 }

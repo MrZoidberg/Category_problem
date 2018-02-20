@@ -22,7 +22,7 @@ namespace Category_problem
 
             CategoryService categoryService = new CategoryService(categoryDataSet);
 
-            Console.WriteLine("GetCategoryInfoById:");
+            Console.WriteLine($"GetCategoryInfoById: {202}");
 
             var categoryRes = categoryService.GetCategoryInfoById(202);
             if (categoryRes != null)
@@ -30,7 +30,7 @@ namespace Category_problem
                 Console.WriteLine("ParentCategoryId = " + categoryRes.ParentCategoryId + " Name = " + categoryRes.Name + " Keyword = " + categoryRes.Keyword);
             }
 
-            Console.WriteLine("GetCategoriesByLevel:");
+            Console.WriteLine($"GetCategoriesByLevel: {3}");
 
             var res = categoryService.GetCategoriesByLevel(3);
             foreach (var category in res)
